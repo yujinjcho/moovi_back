@@ -17,7 +17,9 @@ class MovieReviews(object):
         ratings = {}
 
         for review in self.reviews:
-            rating = { review['critic']: { review['movie']: int(review['rating']) } }
-            ratings.update(rating)
+            critic_name = review['critic']
+            critic_ratings = ratings.get(critic_name, {})
+            critic_ratings.update({ review['movie']: int(review['rating']) })
+            ratings[critic_name] = critic_ratings
 
         return ratings
