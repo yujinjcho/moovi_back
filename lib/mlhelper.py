@@ -5,6 +5,18 @@ def create_inputs_matrix(seen_movies, critics, review_mapping):
         create_inputs_row(movie, critics, review_mapping) for movie in seen_movies
     ])
 
+def create_test_inputs_matrix(critics, review_mapping):
+    input = {}
+
+    for critic, movies in review_mapping.iteritems():
+        i = critics.index(critic)
+        for movie, rating in movies.iteritems():
+            array = input.get(movie, [0] * len(critics))
+            array[i] = rating
+            input[movie] = array
+
+    return np.array(input.values())
+
 def create_inputs_row(movie, critics, review_mapping):
     return [add_rating(critic, movie, review_mapping) for critic in critics]
 

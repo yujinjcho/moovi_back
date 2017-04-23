@@ -1,8 +1,9 @@
 import json
+import numpy as np
 from optparse import OptionParser
 
 from lib.moviereviews import MovieReviews
-from lib.mlhelper import create_inputs_matrix, create_target_matrix
+from lib.mlhelper import create_inputs_matrix, create_test_inputs_matrix, create_target_matrix
 from lib.multi_class import one_vs_all, predict_all
 
 def load_data(filename):
@@ -21,6 +22,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()   
    
     # load data 
+    print "loading data"
     movie_reviews = MovieReviews(
         options.inputs,
         options.positive,
@@ -28,23 +30,34 @@ if __name__ == '__main__':
     )
 
     # ML formatted data <- data 
+    print "creating inputs matrix"
     X = create_inputs_matrix(
         movie_reviews.seen_movies,
         movie_reviews.critics,
         movie_reviews.critic_ratings
     )
+
+    print "creating target matrix"
     Y = create_target_matrix(
         movie_reviews.seen_movies,
-        movie_reviews.liked_movies,
-        movie_reviews.disliked_movies
+        movie_reviews.liked_movies
+    )
+
+    print "creating test inputs matrix"
+    X_test = create_test_inputs_matrix(
+        movie_reviews.critics,
+        movie_reviews.critic_ratings
     )
 
     # output <- params, ML formatted data
     learning_rate = 1
     num_classifications = 2
+
+    print "calculating theta"
     all_theta = one_vs_all(X, Y, num_classifications, learning_rate)
-    hypothesis = predict_all(X, all_theta)
+
+    print "predicting"
+    hypothesis = predict_all(X_test, all_theta)
 
     # output
     print hypothesis
-    
