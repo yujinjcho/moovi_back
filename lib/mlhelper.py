@@ -15,7 +15,7 @@ def create_test_inputs_matrix(critics, review_mapping):
             array[i] = rating
             test_inputs[movie] = array
 
-    return np.array(test_inputs.values())
+    return test_inputs.keys(), np.array(test_inputs.values())
 
 def create_inputs_row(movie, critics, review_mapping):
     return [add_rating(critic, movie, review_mapping) for critic in critics]

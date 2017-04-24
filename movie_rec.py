@@ -6,9 +6,16 @@ from lib.moviereviews import MovieReviews
 from lib.mlhelper import create_inputs_matrix, create_test_inputs_matrix, create_target_matrix
 from lib.multi_class import one_vs_all, predict_all
 
+
 def load_data(filename):
     with open(filename) as f:
         return [line.rstrip() for line in f]
+
+
+def save_data(data, output):
+    with open(output, 'w') as f:
+        f.write("\n".join(["{}\t{}".format(*item) for item in data]))
+
 
 if __name__ == '__main__':
     # parse options. inputs <-
@@ -19,6 +26,8 @@ if __name__ == '__main__':
                       help="examples of positive target values")
     parser.add_option("-n", "--negative", dest="negative", metavar="PATH",
                       help="examples of negative target values")
+    parser.add_option("-o", "--output", dest="output", metavar="PATH",
+                      help="path of hypothesis")
     (options, args) = parser.parse_args()   
    
     # load data 
@@ -44,7 +53,7 @@ if __name__ == '__main__':
     )
 
     print "creating test inputs matrix"
-    X_test = create_test_inputs_matrix(
+    movies, X_test = create_test_inputs_matrix(
         movie_reviews.critics,
         movie_reviews.critic_ratings
     )
@@ -57,7 +66,8 @@ if __name__ == '__main__':
     all_theta = one_vs_all(X, Y, num_classifications, learning_rate)
 
     print "predicting"
-    hypothesis = predict_all(X_test, all_theta)
+    hypothesis = [x[0] for x in predict_all(X_test, all_theta).tolist()]
 
-    # output
-    print hypothesis
+    print "saving hypothesis"
+    save_data(zip(movies, hypothesis), options.output)
+
