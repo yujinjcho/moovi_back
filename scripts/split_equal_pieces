@@ -6,10 +6,16 @@ file_name=$2
 line_count=$(wc -l < $input_path)
 part_size=$(printf "%.0f" $(echo ".2*$line_count" | bc ))
 
+
 split -l $part_size $input_path $file_name.
 mv $file_name.* data/part_files
 
+rm data/cv/$file_name
 mv data/part_files/$file_name.aa data/cv/$file_name
+
+rm data/test/$file_name
 mv data/part_files/$file_name.ab data/test/$file_name
+
+rm data/training/$file_name
 cat data/part_files/$file_name.* > data/training/$file_name
 rm data/part_files/*

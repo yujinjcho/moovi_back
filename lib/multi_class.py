@@ -55,9 +55,5 @@ def predict_all(X, all_theta):
 
     h = sigmoid(X * all_theta.T)
 
-    # scores = [ [score.item(0,0), score.item(0,1), movies[i] ] for i, score in enumerate(h)]
-
-    h_argmax = np.argmax(h, axis=1)
-    h_argmax = h_argmax + 1
-
-    return h_argmax
+    scores = [ {"like": score.item(0,0), "dislike": score.item(0,1)} for score in h]
+    return scores

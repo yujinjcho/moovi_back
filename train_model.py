@@ -14,7 +14,7 @@ def load_data(filename):
 
 def save_data(data, output):
     with open(output, 'w') as f:
-        f.write("\n".join(["{}\t{}".format(*item) for item in data]))
+        f.write(json.dumps(dict(data)))
 
 
 if __name__ == '__main__':
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     all_theta = one_vs_all(X, Y, num_classifications, learning_rate)
 
     print "predicting"
-    hypothesis = [x[0] for x in predict_all(X_test, all_theta).tolist()]
+    hypothesis = predict_all(X_test, all_theta)
 
     print "saving hypothesis"
     save_data(zip(movies, hypothesis), options.output)
