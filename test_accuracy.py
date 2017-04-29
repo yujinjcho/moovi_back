@@ -17,15 +17,23 @@ def load_predictions(filename):
     return classified
 
 def evaluate_accuracy(predictions, positives, negatives):
-    correct  = 0
     total = len(positives) + len(negatives)
 
     pos_correct = sum([ 1 if predictions[movie] == '1' else 0 for movie in positives])
     neg_correct = sum([ 1 if predictions[movie] == '2' else 0 for movie in negatives])
     correct = pos_correct + neg_correct
 
+    pos_predicted = pos_correct + (len(negatives) - neg_correct)
+
+    precision = pos_correct / float(pos_predicted)
+    recall = pos_correct / float(len(positives))
+    f_score = 2 * precision * recall / (precision + recall)
+
     print "\nModel accurately predicted {} / {}".format(correct, total)
-    print "Accuracy: {0:.1f}%\n".format((correct / float(total)) * 100)
+    print "Accuracy: {0:.1f}%".format((correct / float(total)) * 100)
+    print "Precision: {0:.1f}%".format(precision * 100)
+    print "Recall: {0:.1f}%".format(recall * 100)
+    print "F-Score: {0:.2f}\n".format(f_score)
 
 
 if __name__ == '__main__':
