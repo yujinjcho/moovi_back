@@ -1,16 +1,20 @@
+import json
 from optparse import OptionParser
 
 def load_data(filename):
     with open(filename) as f:
-        return [line.rstrip() for line in f]
+        return [line.rstrip() for line in f] 
 
 def load_predictions(filename):
-    hypothesis = {}
-    data = load_data(filename)
-    for prediction in data:
-        movie, rating = prediction.split("\t")
-        hypothesis[movie] = rating
-    return hypothesis 
+    with open(filename) as f:
+        data = json.loads(f.read())
+    classified = dict([
+	(movie, '1') 
+	if rating['like'] > rating['dislike']
+	else (movie, '2')
+	for movie, rating in data.items()
+    ])
+    return classified
 
 def evaluate_accuracy(predictions, positives, negatives):
     correct  = 0
