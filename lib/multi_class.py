@@ -8,10 +8,11 @@ def cost(theta, X, y, lmbda):
     theta = np.matrix(theta)
     X = np.matrix(X)
     y = np.matrix(y)
+    m = len(X)
     first = np.multiply(-y, np.log(sigmoid(X * theta.T)))
     second = np.multiply((1 - y), np.log(1 - sigmoid(X * theta.T)))
-    reg = (lmbda / 2 * len(X)) * np.sum(np.power(theta[:,1:theta.shape[1]], 2))
-    return np.sum(first - second) / (len(X)) + reg
+    reg = lmbda / (2 * m) * np.sum(np.power(theta[:,1:theta.shape[1]], 2))
+    return np.sum(first - second) / m + reg
 
 def gradient(theta, X, y, lmbda):
     theta = np.matrix(theta)
