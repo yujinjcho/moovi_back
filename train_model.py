@@ -7,10 +7,6 @@ from lib.mlhelper import create_inputs_matrix, create_test_inputs_matrix, create
 from lib.multi_class import one_vs_all, predict_all
 from lib.Timer import Timer
 
-def load_data(filename):
-    with open(filename) as f:
-        return [line.rstrip() for line in f]
-
 
 def save_data(data, output):
     with open(output, 'w') as f:
