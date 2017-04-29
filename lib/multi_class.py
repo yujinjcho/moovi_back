@@ -4,30 +4,30 @@ from scipy.optimize import minimize
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
-def cost(theta, X, y, learningRate):
+def cost(theta, X, y, lmbda):
     theta = np.matrix(theta)
     X = np.matrix(X)
     y = np.matrix(y)
     first = np.multiply(-y, np.log(sigmoid(X * theta.T)))
     second = np.multiply((1 - y), np.log(1 - sigmoid(X * theta.T)))
-    reg = (learningRate / 2 * len(X)) * np.sum(np.power(theta[:,1:theta.shape[1]], 2))
+    reg = (lmbda / 2 * len(X)) * np.sum(np.power(theta[:,1:theta.shape[1]], 2))
     return np.sum(first - second) / (len(X)) + reg
 
-def gradient(theta, X, y, learningRate):
+def gradient(theta, X, y, lmbda):
     theta = np.matrix(theta)
     X = np.matrix(X)
     y = np.matrix(y)
 
     parameters = int(theta.ravel().shape[1])
     error = sigmoid(X * theta.T) - y
-    grad = ((X.T * error) / len(X)).T + ((learningRate / len(X)) * theta)
+    grad = ((X.T * error) / len(X)).T + ((lmbda / len(X)) * theta)
 
     # intercept gradient is not regularized
     grad[0, 0] = np.sum(np.multiply(error, X[:,0])) / len(X)
 
     return np.array(grad).ravel()
 
-def one_vs_all(X, y, num_labels, learning_rate):
+def one_vs_all(X, y, num_labels, lmbda):
     rows = X.shape[0]
     params = X.shape[1]
     
@@ -38,7 +38,7 @@ def one_vs_all(X, y, num_labels, learning_rate):
         theta = np.zeros(params + 1)
         y_i = np.array([1 if label == i else 0 for label in y]) 
         y_i = np.reshape(y_i, (rows, 1)) 
-        fmin = minimize(fun=cost, x0=theta, args=(X, y_i, learning_rate), method='TNC', jac=gradient)
+        fmin = minimize(fun=cost, x0=theta, args=(X, y_i, lmbda), method='TNC', jac=gradient)
         all_theta[i-1,:] = fmin.x
     
     return all_theta

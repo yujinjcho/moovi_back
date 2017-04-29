@@ -64,11 +64,11 @@ if __name__ == '__main__':
     timer.interval('Created test inputs matrix')
 
     # output <- params, ML formatted data
-    learning_rate = 1
+    lmbda = 0
     num_classifications = 2
 
     print "calculating theta"
-    all_theta = one_vs_all(X, Y, num_classifications, learning_rate)
+    all_theta = one_vs_all(X, Y, num_classifications, lmbda)
     timer.interval('Calculated theta')
 
     print "predicting"
