@@ -1,5 +1,6 @@
 import json
 from optparse import OptionParser
+from os import listdir
 
 def load_data(filename):
     with open(filename) as f:
@@ -29,11 +30,11 @@ def evaluate_accuracy(predictions, positives, negatives):
     recall = pos_correct / float(len(positives))
     f_score = 2 * precision * recall / (precision + recall)
 
-    print "\nModel accurately predicted {} / {}".format(correct, total)
+    print "Model accurately predicted {} / {}".format(correct, total)
     print "Accuracy: {0:.1f}%".format((correct / float(total)) * 100)
     print "Precision: {0:.1f}%".format(precision * 100)
     print "Recall: {0:.1f}%".format(recall * 100)
-    print "F-Score: {0:.2f}\n".format(f_score)
+    print "F-Score: {0:.2f}".format(f_score)
 
 
 if __name__ == '__main__':
@@ -47,8 +48,11 @@ if __name__ == '__main__':
                       help="path to negative test set")
     (options, args) = parser.parse_args()   
    
-    predictions = load_predictions(options.input)
     positives = load_data(options.positive)
     negatives = load_data(options.negative)
-    evaluate_accuracy(predictions, positives, negatives) 
 
+    for filename in listdir(options.input):
+        predictions = load_predictions(options.input + '/' + filename)
+        lmbda = filename.split('_')[1]
+        print "\nFor lambda of", lmbda
+        evaluate_accuracy(predictions, positives, negatives)
