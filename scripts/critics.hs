@@ -47,17 +47,17 @@ byCritic = foldr (\r -> insertWith mappend (critic r) (fromReview r)) empty
 reviewCounts :: [Review] -> Map String Int
 reviewCounts = foldr (\r -> insertWith (+) (critic r) 1) empty
 
-save :: Map String Critic -> String -> IO ()
-save critics name =
-  let saveKind kind f = writeFile (name ++ "_" ++ kind) . unlines . f
+save :: String -> Map String Critic -> String -> IO ()
+save path critics name =
+  let saveKind kind f = writeFile (path ++ "/" ++ name ++ "_" ++ kind) . unlines . f
   in do
     let Just critic = lookup name critics
     saveKind "positives" positives critic
     saveKind "negatives" negatives critic
 
-saveAll :: [String] -> [Review] -> IO ()
-saveAll names reviews =
-  let saveCritics = save $ byCritic reviews
+saveAll :: [String] -> String -> [Review] -> IO ()
+saveAll names path reviews =
+  let saveCritics = save path $ byCritic reviews
   in mapM_ saveCritics names
 
 top :: Int -> [Review] -> IO ()
@@ -66,11 +66,11 @@ top n reviews =
   in mapM_ (\(c, r) -> putStrLn $ c ++ " " ++ show r) $ take n sorted
 
 main = do
-  [file, action, arg] <- getArgs
+  (file:action:arg:rest) <- getArgs
   contents <- readFile file
   let json = init $ split (c2w '\n') contents
   let Just reviews = mapM (\r -> decode r :: Maybe Review) json
 
   case action of
-    "save" -> saveAll (words arg) reviews
+    "save" -> saveAll (words arg) (head rest) reviews
     "top"  -> top (read arg) reviews
