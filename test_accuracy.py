@@ -9,32 +9,37 @@ def load_data(filename):
 def load_predictions(filename):
     with open(filename) as f:
         data = json.loads(f.read())
-    classified = dict([
-	(movie, '1') 
-	if rating['like'] > rating['dislike']
-	else (movie, '2')
-	for movie, rating in data.items()
-    ])
-    return classified
+    predictions = {}
+    for tuning_param in data:
+        classified = dict([
+            (movie, '1') 
+            if rating['like'] > rating['dislike']
+            else (movie, '2')
+            for movie, rating in data[tuning_param].items()
+        ])
+        predictions[tuning_param] = classified
+    return predictions
 
 def evaluate_accuracy(predictions, positives, negatives):
     total = len(positives) + len(negatives)
+    for tuning_param in predictions:
 
-    pos_correct = sum([ 1 if predictions[movie] == '1' else 0 for movie in positives])
-    neg_correct = sum([ 1 if predictions[movie] == '2' else 0 for movie in negatives])
-    correct = pos_correct + neg_correct
+        pos_correct = sum([ 1 if predictions[tuning_param][movie] == '1' else 0 for movie in positives])
+        neg_correct = sum([ 1 if predictions[tuning_param][movie] == '2' else 0 for movie in negatives])
+        correct = pos_correct + neg_correct
 
-    pos_predicted = pos_correct + (len(negatives) - neg_correct)
+        pos_predicted = pos_correct + (len(negatives) - neg_correct)
 
-    precision = pos_correct / float(pos_predicted)
-    recall = pos_correct / float(len(positives))
-    f_score = 2 * precision * recall / (precision + recall)
+        precision = pos_correct / float(pos_predicted)
+        recall = pos_correct / float(len(positives))
+        f_score = 2 * precision * recall / (precision + recall)
 
-    print "Model accurately predicted {} / {}".format(correct, total)
-    print "Accuracy: {0:.1f}%".format((correct / float(total)) * 100)
-    print "Precision: {0:.1f}%".format(precision * 100)
-    print "Recall: {0:.1f}%".format(recall * 100)
-    print "F-Score: {0:.2f}".format(f_score)
+        print "\nTuning Param Value {}".format(tuning_param)
+        print "Model accurately predicted {} / {}".format(correct, total)
+        print "Accuracy: {0:.1f}%".format((correct / float(total)) * 100)
+        print "Precision: {0:.1f}%".format(precision * 100)
+        print "Recall: {0:.1f}%".format(recall * 100)
+        print "F-Score: {0:.2f}".format(f_score)
 
 
 if __name__ == '__main__':
@@ -51,8 +56,10 @@ if __name__ == '__main__':
     positives = load_data(options.positive)
     negatives = load_data(options.negative)
 
-    for filename in listdir(options.input):
-        predictions = load_predictions(options.input + '/' + filename)
-        lmbda = filename.split('_')[1]
-        print "\nFor lambda of", lmbda
-        evaluate_accuracy(predictions, positives, negatives)
+    # for filename in listdir(options.input):
+    #     predictions = load_predictions(options.input + '/' + filename)
+    #     lmbda = filename.split('_')[1]
+    #     print "\nFor lambda of", lmbda
+    #     evaluate_accuracy(predictions, positives, negatives)
+    predictions = load_predictions(options.input)
+    evaluate_accuracy(predictions, positives, negatives)

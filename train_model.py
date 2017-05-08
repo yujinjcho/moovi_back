@@ -2,30 +2,12 @@ import json
 import numpy as np
 from optparse import OptionParser
 
-from lib.moviereviews import MovieReviews
+from lib.MovieReviews import MovieReviews
+from lib.ModelTrainer import ModelTrainer
 from lib.mlhelper import create_inputs_matrix, create_test_inputs_matrix, create_target_matrix
-from lib.multi_class import one_vs_all, predict_all
+import lib.logistic_regression
+import lib.random_forest
 from lib.Timer import Timer
-
-
-def save_data(data, output):
-    with open(output, 'w') as f:
-        f.write(json.dumps(dict(data)))
-
-def train_and_predict(X_train, X_test, Y, num_classifications, options, lmbda):
-    print "\nfor lambda value", lmbda
-
-    print "calculating theta"
-    all_theta = one_vs_all(X, Y, num_classifications, lmbda)
-    timer.interval('Calculated theta')
-
-    print "predicting"
-    hypothesis = predict_all(X_test, all_theta)
-    timer.interval('Made prediction')
-
-    print "saving hypothesis"
-    save_data(zip(movies, hypothesis), options.output + "/hypothesis_" + str(lmbda))
-    timer.interval('Finished Saving')
 
 
 if __name__ == '__main__':
@@ -48,7 +30,8 @@ if __name__ == '__main__':
     movie_reviews = MovieReviews(
         options.inputs,
         options.positive,
-        options.negative
+        options.negative,
+        'susan-granger'
     )
     timer.interval('Loaded Data')
 
@@ -74,7 +57,10 @@ if __name__ == '__main__':
     )
     timer.interval('Created test inputs matrix')
 
-    lmbdas = [0, 0.01, 0.03, 0.1, 0.3, 1.0]
-    print "\ntraining and predicting for lambda values:", lmbdas
-    for lmbda in lmbdas:
-        train_and_predict(X, X_test, Y, 2, options, lmbda)
+    model_trainer = ModelTrainer(X, X_test, movies, Y, timer)
+    # lmbdas = [0, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0]
+    # model_trainer.train_and_predict('logistic_regression', lmbdas)
+
+    min_leaves = [1, 5, 10, 20, 50, 100, 200]
+    model_trainer.train_and_predict('random_forest', min_leaves)
+    model_trainer.save(options.output)

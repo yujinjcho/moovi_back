@@ -1,5 +1,10 @@
+import json
 import numpy as np
 from scipy.optimize import minimize
+
+def save_data(data, output):
+    with open(output, 'w') as f:
+        f.write(json.dumps(dict(data)))
 
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
@@ -57,3 +62,18 @@ def predict_all(X, all_theta):
 
     scores = [ {"like": score.item(0,0), "dislike": score.item(0,1)} for score in h]
     return scores
+
+def train_and_predict(trainer, tuning_params):
+    num_classifications = 2
+
+    for lmbda in tuning_params:
+        print "calculating theta"
+        all_theta = one_vs_all(trainer.X_train, trainer.Y, num_classifications, lmbda)
+        trainer.timer.interval('Calculated theta')
+
+        print "predicting"
+        hypothesis = predict_all(trainer.X_test, all_theta)
+        trainer.timer.interval('Made prediction')
+        trainer.store_predict(hypothesis, lmbda)
+          
+
