@@ -36,13 +36,12 @@ if __name__ == '__main__':
     timer.interval('Loaded Data')
 
     print "converting to arrays"
-    X, Y = load_svmlight_file('test_output')
+    X, Y = load_svmlight_file('training.svm')
     movies = movie_reviews.all_movies
-    X_predict, _ = load_svmlight_file('test_output_2')
+    X_predict, _ = load_svmlight_file('predict.svm')
     timer.interval('converted to arrays')
 
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=.25, random_state=1)
 
     model_trainer = ModelTrainer(X_train, X_test, y_train, y_test, movies, timer)
-    lmbdas = [0, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0]
-    model_trainer.train_and_predict('logistic_regression', lmbdas)
+    model_trainer.train_and_predict()

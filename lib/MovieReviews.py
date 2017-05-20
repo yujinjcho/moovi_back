@@ -17,6 +17,7 @@ class MovieReviews(object):
         self.movie_mapping = self.make_movie_mapping()
         self.all_movies = self.movie_mapping.keys()
         self.create_predict_svm()
+        self.create_svm()
 
     def make_movie_mapping(self):
         mapping = defaultdict(list)
@@ -36,7 +37,6 @@ class MovieReviews(object):
         return dict(mapping)
 
     def create_svm(self):
-        print len(self.seen_movies)
         with open('training.svm', 'w') as f:
             for movie in self.seen_movies:
                 if movie in self.liked_movies:
