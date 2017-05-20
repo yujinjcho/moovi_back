@@ -1,6 +1,7 @@
 import json
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn.model_selection import GridSearchCV 
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 
 class ModelTrainer(object):
@@ -14,18 +15,27 @@ class ModelTrainer(object):
         self.predictions = {}
 
 
-    def train_and_predict(self, model_type, tuning_parameters):
-        clf = LogisticRegression(C=0.01)
+    def train_and_predict(self):
+        parameters = {'C': [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0 ]} 
+
+        print "Tuning params with GridSearch"
+        clf = GridSearchCV(LogisticRegression(), parameters, n_jobs=-1, error_score=0) 
         clf.fit(self.X_train, self.y_train) 
+        self.timer.interval("Finished tuning params")
+       
+        print "Predicting results"
         predicted = clf.predict(self.X_test)
-        print 'accuracy: ', accuracy_score(self.y_test, predicted)
+        self.timer.interval("Finished Predictions\n")
+
+	print 'Stats:'
+	print '----------'
+        print 'accuracy: ', accuracy_score(self.y_test.ravel(), predicted)
+        print 'f1:', f1_score(self.y_test.ravel(), predicted)
+        print 'precision: ', precision_score(self.y_test.ravel(), predicted)
+        print 'recall: ', recall_score(self.y_test.ravel(), predicted)
+	print '----------'
 
 
-    def select_model(self, model_type):
-        if model_type == 'logistic_regression':
-            return logistic_regression.train_and_predict
-        else:
-            return random_forest.train_and_predict
 
     def store_predict(self, hypothesis, tuning_param):
         self.predictions[tuning_param] = dict(zip(self.movies, hypothesis))
