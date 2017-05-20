@@ -5,9 +5,10 @@ from optparse import OptionParser
 from lib.MovieReviews import MovieReviews
 from lib.ModelTrainer import ModelTrainer
 from lib.mlhelper import create_inputs_matrix, create_test_inputs_matrix, create_target_matrix
-import lib.logistic_regression
-import lib.random_forest
 from lib.Timer import Timer
+
+from sklearn.datasets import load_svmlight_file
+from sklearn.model_selection import train_test_split
 
 
 if __name__ == '__main__':
@@ -35,32 +36,14 @@ if __name__ == '__main__':
     )
     timer.interval('Loaded Data')
 
-    print "creating inputs matrix"
-    X = create_inputs_matrix(
-        movie_reviews.seen_movies,
-        movie_reviews.critics,
-        movie_reviews.critic_ratings
-    )
-    timer.interval('Loaded X-matrix')
+    print "converting to arrays"
+    X, Y = load_svmlight_file('test_output')
+    movies = movie_reviews.all_movies
+    X_predict, _ = load_svmlight_file('test_output_2')
+    timer.interval('converted to arrays')
 
-    print "creating target matrix"
-    Y = create_target_matrix(
-        movie_reviews.seen_movies,
-        movie_reviews.liked_movies
-    )
-    timer.interval('Loaded y-matrix')
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=.25, random_state=1)
 
-    print "creating test inputs matrix"
-    movies, X_test = create_test_inputs_matrix(
-        movie_reviews.critics,
-        movie_reviews.critic_ratings
-    )
-    timer.interval('Created test inputs matrix')
-
-    model_trainer = ModelTrainer(X, X_test, movies, Y, timer)
-    # lmbdas = [0, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0]
-    # model_trainer.train_and_predict('logistic_regression', lmbdas)
-
-    min_leaves = [1, 5, 10, 20, 50, 100, 200]
-    model_trainer.train_and_predict('random_forest', min_leaves)
-    model_trainer.save(options.output)
+    model_trainer = ModelTrainer(X_train, X_test, y_train, y_test, movies, timer)
+    lmbdas = [0, 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0]
+    model_trainer.train_and_predict('logistic_regression', lmbdas)
