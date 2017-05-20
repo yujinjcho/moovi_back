@@ -7,7 +7,6 @@ from lib.ModelTrainer import ModelTrainer
 from lib.Timer import Timer
 
 from sklearn.datasets import load_svmlight_file
-from sklearn.model_selection import train_test_split
 
 
 if __name__ == '__main__':
@@ -41,7 +40,10 @@ if __name__ == '__main__':
     X_predict, _ = load_svmlight_file('predict.svm')
     timer.interval('converted to arrays')
 
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=.25, random_state=1)
+    model_trainer = ModelTrainer(X, Y, movies, timer)
+    model_trainer.calc_metrics()
 
-    model_trainer = ModelTrainer(X_train, X_test, y_train, y_test, movies, timer)
-    model_trainer.train_and_predict()
+    model_trainer.train_and_predict(X_predict)
+    model_trainer.save('test_output')
+
+
