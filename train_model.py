@@ -44,6 +44,6 @@ if __name__ == '__main__':
     model_trainer.calc_metrics()
 
     model_trainer.train_and_predict(X_predict)
-    model_trainer.save('test_output')
+    model_trainer.save('predictions.json')
 
 

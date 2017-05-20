@@ -17,35 +17,31 @@ class MovieRecommender(object):
             return [line.rstrip() for line in f]
 
     def top_n(self, n):
-        like_predict = [
-            pred for pred in self.predictions.items() 
-            if pred[1]['like'] > pred[1]['dislike']
+        predict_like = [
+            (movie,scores) for movie, scores in self.predictions.items() 
+            if scores[1] > scores[0]
         ]
-        print "\nTop {} Movie Recommendations".format(n)
-        self.sorted_n(like_predict, n, 'like')
+        predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)
+        for i in range(n):
+            print i+1, predict_sorted[i][0], predict_sorted[i][1][1]
 
     def bottom_n(self, n):
-        dislike_predict = [
-            pred for pred in self.predictions.items() 
-            if pred[1]['dislike'] > pred[1]['like']
+        predict_dislike = [
+            (movie,scores) for movie, scores in self.predictions.items() 
+            if scores[0] > scores[1]
         ]
-        print "\nBottom {} Movie Recommendations".format(n)
-        self.sorted_n(dislike_predict, n, 'dislike')
+        predict_sorted = sorted(predict_dislike, key=lambda x: x[1][0], reverse=True)
+        for i in range(n):
+            print i+1, predict_sorted[i][0], predict_sorted[i][1][0]
         
-
-    def sorted_n(self, preds, n, rating):
-        sorted_predictions = sorted(
-            preds, 
-            key=lambda x: x[1][rating], 
-            reverse=True
-        )
-        not_seen = [pred for pred in sorted_predictions if pred[0] not in self.seen_movies]
-        for i in range(min(n, len(not_seen))):
-            print i+1, not_seen[i][0]
-
     def rating_for_movie(self, movie):
         if movie in self.predictions:
-            return self.predictions[movie]
+            scores = self.predictions[movie]
+            return {
+                'like': scores[1],
+                'dislike': scores[0]
+            }
+
         return None
 
 if __name__ == '__main__':
@@ -60,7 +56,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()   
   
     recommender = MovieRecommender(options.hypothesis, options.positive, options.negative)
-    recommender.top_n(200)
-    recommender.bottom_n(200)
+    recommender.top_n(20)
+    recommender.bottom_n(20)
     print recommender.rating_for_movie('1198124-shutter_island')
 
