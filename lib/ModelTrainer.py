@@ -1,6 +1,4 @@
 import json
-import logistic_regression
-import random_forest
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 

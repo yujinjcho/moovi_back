@@ -4,7 +4,6 @@ from optparse import OptionParser
 
 from lib.MovieReviews import MovieReviews
 from lib.ModelTrainer import ModelTrainer
-from lib.mlhelper import create_inputs_matrix, create_test_inputs_matrix, create_target_matrix
 from lib.Timer import Timer
 
 from sklearn.datasets import load_svmlight_file
