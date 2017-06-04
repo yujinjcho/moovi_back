@@ -1,23 +1,55 @@
 import json
+import StringIO
 from collections import defaultdict
+import psycopg2
 
 class MovieReviews(object):
-    def __init__(self, input_path, positive, negative, exclude=None):
-        self.reviews = [json.loads(line) for line in self.load_data(input_path)]
-        self.liked_movies = self.load_data(positive)
-        self.disliked_movies = self.load_data(negative)
+    def __init__(self, target_user=None):
+        self.reviews = self.load_reviews()
+        self.liked_movies = self.load_movies('1', target_user)
+        self.disliked_movies = self.load_movies('-1', target_user)
         self.seen_movies = self.liked_movies + self.disliked_movies
         self.critics = list(set([review['critic'] for review in self.reviews]))
         self.critic_ratings = self.critic_rating_mapping()
 
-        if exclude:
-            self.critic_ratings.pop(exclude, None)
-            self.critics.remove(exclude)
+        if target_user:
+            self.critic_ratings.pop(target_user, None)
+            self.critics.remove(target_user)
 
         self.movie_mapping = self.make_movie_mapping()
         self.all_movies = self.movie_mapping.keys()
-        self.create_predict_svm()
-        self.create_svm()
+        self.predict_svm = self.create_predict_svm()
+        self.training_svm = self.create_svm()
+
+
+    def load_reviews(self):
+        conn = psycopg2.connect('dbname=movie_rec') 
+        cur = conn.cursor()  
+        query = """select movie_id, user_id, rating from ratings"""
+        cur.execute(query)
+        results = cur.fetchall()
+        cur.close()
+        conn.close()
+        return [{
+            'movie': result[0],
+            'critic': result[1],
+            'rating': result[2]
+        } for result in results]
+
+
+    def load_movies(self, classification, target_user):
+        conn = psycopg2.connect('dbname=movie_rec') 
+        cur = conn.cursor()  
+        query = """select movie_id from ratings
+                 where user_id = %s and 
+                 rating = %s"""
+        query_data = (target_user, classification)
+        cur.execute(query, query_data)
+        results = cur.fetchall()
+        cur.close()
+        conn.close()
+        return [result[0] for result in results]
+
 
     def make_movie_mapping(self):
         mapping = defaultdict(list)
@@ -36,30 +68,30 @@ class MovieReviews(object):
 
         return dict(mapping)
 
-    def create_svm(self):
-        with open('training.svm', 'w') as f:
-            for movie in self.seen_movies:
-                if movie in self.liked_movies:
-                    label = '1'
-                else:
-                    label = '-1'
 
-                if movie in self.movie_mapping:
-                    features = ' '.join(self.movie_mapping[movie])
-                else:
-                    features = ''
-                f.write("{} {}\n".format(label, features))
+    def create_svm(self):
+        svm = []
+        output = StringIO.StringIO()
+        for movie in self.seen_movies:
+            if movie in self.liked_movies:
+                label = '1'
+            else:
+                label = '-1'
+
+            if movie in self.movie_mapping:
+                features = ' '.join(self.movie_mapping[movie])
+            else:
+                features = ''
+            svm.append("{} {}".format(label, features))
+        return StringIO.StringIO("\n".join(svm))
+
 
     def create_predict_svm(self):
-        with open('predict.svm', 'w') as f:
-            for movie in self.movie_mapping:
-                features = ' '.join(self.movie_mapping[movie])
-                f.write("0 {} # {}\n".format(features, movie.encode('utf8')))
-
-
-    def load_data(self, filename):
-        with open(filename) as f:
-            return [line.rstrip() for line in f]
+        svm = []
+        for movie in self.movie_mapping:
+            features = ' '.join(self.movie_mapping[movie])
+            svm.append("0 {} # {}".format(features, movie))
+        return StringIO.StringIO("\n".join(svm))
 
     def critic_rating_mapping(self):
         ratings = {}
