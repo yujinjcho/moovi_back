@@ -35,13 +35,13 @@ class ModelTrainer(object):
         # predicted_scores = clf.predict_proba(self.X_test)
         self.timer.interval("Finished Predictions\n")
 
-	print 'Stats:'
-	print '----------'
+        print 'Stats:'
+        print '----------'
         print 'accuracy: ', accuracy_score(y_test, predicted)
         print 'f1:', f1_score(y_test, predicted)
         print 'precision: ', precision_score(y_test, predicted)
         print 'recall: ', recall_score(y_test, predicted)
-	print '----------'
+        print '----------'
 
 
     def save(self, output):
