@@ -1,10 +1,11 @@
+import os
 import json
 import StringIO
 from collections import defaultdict
 import psycopg2
 
 class MovieReviews(object):
-    def __init__(self, target_user=None):
+    def __init__(self, target_user):
         self.reviews = self.load_reviews()
         self.liked_movies = self.load_movies('1', target_user)
         self.disliked_movies = self.load_movies('-1', target_user)
@@ -12,9 +13,8 @@ class MovieReviews(object):
         self.critics = list(set([review['critic'] for review in self.reviews]))
         self.critic_ratings = self.critic_rating_mapping()
 
-        if target_user:
-            self.critic_ratings.pop(target_user, None)
-            self.critics.remove(target_user)
+        self.critic_ratings.pop(target_user, None)
+        self.critics.remove(target_user)
 
         self.movie_mapping = self.make_movie_mapping()
         self.all_movies = self.movie_mapping.keys()
@@ -24,16 +24,16 @@ class MovieReviews(object):
 
     def load_reviews(self):
         conn = psycopg2.connect(
-            dbname="d2lk5mpa9ag31q",
-            user="peyclcqbsrfxme",
-            password="9721fa6f6a6647ba49e7002616c7dd652b035a3d81202020889414bfe030fccb",
-            port="5432",
-            host="ec2-23-23-234-118.compute-1.amazonaws.com"
+           dbname=os.environ['DBNAME'],
+           user=os.environ['PGUSER'],
+           password=os.environ['PGPASSWORD'],
+           port=os.environ['PGPORT'],
+           host=os.environ['PGHOST']
         )
         
 
         cur = conn.cursor()  
-        query = """select movie_id, user_id, rating from ratings"""
+        query = """select rotten_id, user_id, rating from ratings"""
         cur.execute(query)
         results = cur.fetchall()
         cur.close()
@@ -47,15 +47,15 @@ class MovieReviews(object):
 
     def load_movies(self, classification, target_user):
         conn = psycopg2.connect(
-            dbname="d2lk5mpa9ag31q",
-            user="peyclcqbsrfxme",
-            password="9721fa6f6a6647ba49e7002616c7dd652b035a3d81202020889414bfe030fccb",
-            port="5432",
-            host="ec2-23-23-234-118.compute-1.amazonaws.com"
+            dbname=os.environ['DBNAME'],
+            user=os.environ['PGUSER'],
+            password=os.environ['PGPASSWORD'],
+            port=os.environ['PGPORT'],
+            host=os.environ['PGHOST']
         )
         
         cur = conn.cursor()  
-        query = """select movie_id from ratings
+        query = """select rotten_id from ratings
                  where user_id = %s and 
                  rating = %s"""
         query_data = (target_user, classification)

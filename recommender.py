@@ -18,10 +18,7 @@ class MovieRecommender(object):
         results = cur.fetchall()
         cur.close()
         conn.close()
-        return dict([
-            (result[0], result[1])
-            for result in results
-        ])
+        return dict(results)
 
 
     def load_movies(self, classification, target_user):
@@ -44,17 +41,16 @@ class MovieRecommender(object):
     def top_n(self, n):
         predict_like = [
             (movie,scores) for movie, scores in self.predictions.items() 
-            if scores[1] > scores[0]
+            if scores[1] > scores[0] and movie not in self.seen_movies
         ]
         predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)
-        predict_sorted = [x for x in predict_sorted if x[0] not in self.seen_movies]
         self.print_recommendations(predict_sorted, n)
 
 
     def bottom_n(self, n):
         predict_dislike = [
             (movie,scores) for movie, scores in self.predictions.items() 
-            if scores[0] > scores[1]
+            if scores[0] > scores[1] and movie not in self.seen_movies
         ]
         predict_sorted = sorted(predict_dislike, key=lambda x: x[1][0], reverse=True)
         self.print_recommendations(predict_sorted, n)

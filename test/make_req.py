@@ -4,7 +4,9 @@ import json
 import requests
 
 def recommendations():
-    location = 'http://localhost:5000/api'
+    # location = 'http://localhost:5000/api'
+    # location = 'http://127.0.0.1:8000/api'
+    location = 'https://movie-rec-project.herokuapp.com/api'
     device_id  = 'test_user1'
     
     rating1 = {'movie_id': '771028170', 'rating': '1'}
@@ -47,10 +49,13 @@ def recommendations():
         'ratings': json.dumps(ratings2),
         'device_id': device_id
     }
-    res= requests.post(location, data=data)
-    recommendations = json.loads(res.text)['recommendations']
-    print recommendations
-    return recommendations
+    print json.dumps(data)
+    # res= requests.post(location, data=data)
+    # print res.text
+    # recommendations = json.loads(res.text)['recommendations']
+    # print recommendations
+    # return recommendations
+    # return res.text
     
 class Test(unittest.TestCase):
 

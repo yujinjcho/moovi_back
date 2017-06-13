@@ -1,5 +1,5 @@
 CREATE TABLE movies (
-    movie_id    serial primary key,
+    rotten_id   text primary key,
     url_handle  text,
     description text,
     year        integer,
@@ -10,6 +10,6 @@ CREATE TABLE movies (
 CREATE TABLE ratings (
     rating_id   serial primary key,
 		user_id     text not null,
-		movie_id    serial references movies(movie_id),
+		rotten_id   text references movies(rotten_id),
 		rating	    text not null 	
 );
