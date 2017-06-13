@@ -5,7 +5,7 @@ import psycopg2
 from lib.MovieReviews import MovieReviews
 from lib.Timer import Timer
 from lib.ModelTrainer import ModelTrainer
-from recommender_server import MovieRecommender
+from recommender import MovieRecommender
 from sklearn.datasets import load_svmlight_file
 
 app = Flask(__name__)

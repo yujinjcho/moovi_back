@@ -3,12 +3,17 @@ from optparse import OptionParser
 import psycopg2
 
 class MovieRecommender(object):
-    def __init__(self, hypothesis_path, target_user):
-        self.predictions = self.load_hypothesis(hypothesis_path)
-        self.liked_movies = self.load_movies('1', target_user)
-        self.disliked_movies = self.load_movies('-1', target_user)
+    def __init__(self, movie_reviews, model_trainer):
+        self.predictions = self.load_predictions(model_trainer)
+        self.liked_movies = movie_reviews.liked_movies
+        self.disliked_movies = movie_reviews.disliked_movies
         self.seen_movies = set(self.liked_movies + self.disliked_movies)
-	self.movie_mapping = self.load_mapping()
+        self.movie_mapping = self.load_mapping()
+    
+    def load_predictions(self, model_trainer):
+        return dict(
+            zip(model_trainer.movies, model_trainer.predictions.tolist())
+        )
 
     def load_mapping(self):
         conn = psycopg2.connect('dbname=movie_rec')
@@ -20,31 +25,13 @@ class MovieRecommender(object):
         conn.close()
         return dict(results)
 
-
-    def load_movies(self, classification, target_user):
-        conn = psycopg2.connect('dbname=movie_rec')
-        cur = conn.cursor()
-        query = """select movie_id from ratings
-                 where user_id = %s and 
-                 rating = %s"""
-        query_data = (target_user, classification)
-        cur.execute(query, query_data)
-        results = cur.fetchall()
-        cur.close()
-        conn.close()
-        return [result[0] for result in results]
-
-    def load_hypothesis(self, filename):
-        with open(filename) as f:
-            return json.loads(f.read())
-
     def top_n(self, n):
         predict_like = [
             (movie,scores) for movie, scores in self.predictions.items() 
             if scores[1] > scores[0] and movie not in self.seen_movies
         ]
         predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)
-        self.print_recommendations(predict_sorted, n)
+        return self.recommendations(predict_sorted, n)
 
 
     def bottom_n(self, n):
@@ -53,16 +40,15 @@ class MovieRecommender(object):
             if scores[0] > scores[1] and movie not in self.seen_movies
         ]
         predict_sorted = sorted(predict_dislike, key=lambda x: x[1][0], reverse=True)
-        self.print_recommendations(predict_sorted, n)
+        return self.recommendations(predict_sorted, n)
 
 
-    def print_recommendations(self, recommendations, n):
-        for i in range(n):
-            movie_id = recommendations[i][0]
-            score = recommendations[i][1][1]
-            title = self.movie_mapping[int(movie_id)]
-            print i+1, title, score 
-       
+    def recommendations(self, predict_sorted, n):
+        return [
+            self.movie_mapping[predict_sorted[i][0]]
+            for i in range(n)
+        ]
+
 
     def rating_for_movie(self, movie):
         if movie in self.predictions:
@@ -73,19 +59,3 @@ class MovieRecommender(object):
             }
 
         return None
-
-if __name__ == '__main__':
-    # parse options. inputs <-
-    parser = OptionParser()
-    parser.add_option("-y", "--hypothesis", dest="hypothesis", metavar="PATH",
-                      help="path to predicted values")
-    parser.add_option("-p", "--positive", dest="positive", metavar="PATH",
-                      help="path to positive test set")
-    parser.add_option("-n", "--negative", dest="negative", metavar="PATH",
-                      help="path to negative test set")
-    (options, args) = parser.parse_args()   
-  
-    recommender = MovieRecommender(options.hypothesis, 'susan-granger')
-    recommender.top_n(100)
-    recommender.bottom_n(20)
-
