@@ -4,7 +4,7 @@ from collections import defaultdict
 import psycopg2
 
 class MovieReviews(object):
-    def __init__(self, target_user=None):
+    def __init__(self, target_user):
         self.reviews = self.load_reviews()
         self.liked_movies = self.load_movies('1', target_user)
         self.disliked_movies = self.load_movies('-1', target_user)
@@ -12,9 +12,8 @@ class MovieReviews(object):
         self.critics = list(set([review['critic'] for review in self.reviews]))
         self.critic_ratings = self.critic_rating_mapping()
 
-        if target_user:
-            self.critic_ratings.pop(target_user, None)
-            self.critics.remove(target_user)
+        self.critic_ratings.pop(target_user, None)
+        self.critics.remove(target_user)
 
         self.movie_mapping = self.make_movie_mapping()
         self.all_movies = self.movie_mapping.keys()

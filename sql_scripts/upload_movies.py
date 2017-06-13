@@ -10,29 +10,16 @@ parser.add_option("-i", "--input", dest="input", metavar="FILE",
 
 conn = psycopg2.connect("dbname=movie_rec")
 cur = conn.cursor()
-description = None
-year = None
-title = None
-image_url = None
 
-# for line in sys.stdin:
 with open(options.input) as f:
     for line in f:
 
         data = json.loads(line.rstrip())
-        url_handle = data['movie_url_handle']
-
-        if 'description' in data:
-            description = data['description']
-
-        if 'year' in data:
-            year = data['year']
-
-        if 'movie_title' in data:
-            title = data['movie_title']
-
-        if 'poster_url' in data:
-            image_url = data['poster_url']
+        url_handle = data.get('movie_url_handle')
+        description = data.get('description')
+        year = data.get('year')
+        title = data.get('movie_title')
+        image_url = data.get('poster_url')
 
         SQL = """INSERT INTO movies 
         (url_handle, description, year, title, image_url) 
@@ -40,10 +27,6 @@ with open(options.input) as f:
         data = (url_handle, description, year, title, image_url)
         cur.execute(SQL, data)
 
-        description = None
-        year = None
-        title = None
-        image_url = None
    
 conn.commit()
 cur.close()
