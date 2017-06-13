@@ -56,7 +56,13 @@ def _write_to_db(ratings, user):
 
 def get_db():
     if not hasattr(g, 'db'):
-        g.db = psycopg2.connect('dbname=movie_rec')
+        g.db = psycopg2.connect(
+            dbname="d2lk5mpa9ag31q",
+            user="peyclcqbsrfxme",
+            password="9721fa6f6a6647ba49e7002616c7dd652b035a3d81202020889414bfe030fccb",
+            port="5432",
+            host="ec2-23-23-234-118.compute-1.amazonaws.com"
+        )
     return g.db
 
 

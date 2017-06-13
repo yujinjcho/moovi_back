@@ -23,7 +23,15 @@ class MovieReviews(object):
 
 
     def load_reviews(self):
-        conn = psycopg2.connect('dbname=movie_rec') 
+        conn = psycopg2.connect(
+            dbname="d2lk5mpa9ag31q",
+            user="peyclcqbsrfxme",
+            password="9721fa6f6a6647ba49e7002616c7dd652b035a3d81202020889414bfe030fccb",
+            port="5432",
+            host="ec2-23-23-234-118.compute-1.amazonaws.com"
+        )
+        
+
         cur = conn.cursor()  
         query = """select movie_id, user_id, rating from ratings"""
         cur.execute(query)
@@ -38,7 +46,14 @@ class MovieReviews(object):
 
 
     def load_movies(self, classification, target_user):
-        conn = psycopg2.connect('dbname=movie_rec') 
+        conn = psycopg2.connect(
+            dbname="d2lk5mpa9ag31q",
+            user="peyclcqbsrfxme",
+            password="9721fa6f6a6647ba49e7002616c7dd652b035a3d81202020889414bfe030fccb",
+            port="5432",
+            host="ec2-23-23-234-118.compute-1.amazonaws.com"
+        )
+        
         cur = conn.cursor()  
         query = """select movie_id from ratings
                  where user_id = %s and 
