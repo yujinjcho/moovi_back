@@ -1,3 +1,4 @@
+import os
 import json
 from optparse import OptionParser
 import psycopg2
@@ -16,9 +17,15 @@ class MovieRecommender(object):
         )
 
     def load_mapping(self):
-        conn = psycopg2.connect('dbname=movie_rec')
+        conn = psycopg2.connect(
+            dbname=os.environ['DBNAME'],
+            user=os.environ['PGUSER'],
+            password=os.environ['PGPASSWORD'],
+            port=os.environ['PGPORT'],
+            host=os.environ['PGHOST']
+        )
         cur = conn.cursor()
-        query = "select movie_id, title from movies"
+        query = "select rotten_id, title from movies"
         cur.execute(query)
         results = cur.fetchall()
         cur.close()

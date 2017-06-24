@@ -33,7 +33,7 @@ class MovieReviews(object):
         
 
         cur = conn.cursor()  
-        query = """select rotten_id, user_id, rating from ratings"""
+        query = """select rotten_id, user_id, rating from ratings where rating != '0'"""
         cur.execute(query)
         results = cur.fetchall()
         cur.close()

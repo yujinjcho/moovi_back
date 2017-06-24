@@ -2,18 +2,14 @@ import sys
 import json
 from optparse import OptionParser
 import psycopg2
+from config import db_config
 
 parser = OptionParser()
 parser.add_option("-i", "--input", dest="input", metavar="FILE",
                   help="name of upload file")
 (options, args) = parser.parse_args()
 
-conn = psycopg2.connect(
-    dbname='d4re7d0e0r1t8v',
-    user='iqtoybmgmvwkts',
-    password='a26080926d1e5e819ab81ed346320d1e1acc32bd040053ebde3f6b8192cf7754',
-    port='5432',
-    host='ec2-107-20-226-93.compute-1.amazonaws.com')
+conn = psycopg2.connect(**db_config)
 cur = conn.cursor()
 
 with open(options.input) as f:
