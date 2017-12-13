@@ -9,6 +9,8 @@ class MovieReviews(object):
         self.reviews = self.load_reviews()
         self.liked_movies = self.load_movies('1', target_user)
         self.disliked_movies = self.load_movies('-1', target_user)
+        self.box_office = self.load_box_office()
+
         self.seen_movies = self.liked_movies + self.disliked_movies
         self.critics = list(set([review['critic'] for review in self.reviews]))
         self.critic_ratings = self.critic_rating_mapping()
@@ -65,8 +67,36 @@ class MovieReviews(object):
         conn.close()
         return [result[0] for result in results]
 
+    def load_box_office(self):
+        conn = psycopg2.connect(
+            dbname=os.environ['DBNAME'],
+            user=os.environ['PGUSER'],
+            password=os.environ['PGPASSWORD'],
+            port=os.environ['PGPORT'],
+            host=os.environ['PGHOST']
+        )
+
+        query = """SELECT UNNEST(movies)
+                   FROM (
+                     SELECT *
+                     FROM box_office
+                     ORDER BY 
+                        date_created DESC
+                     LIMIT 1
+                   ) i
+        """
+       
+        with conn.cursor() as cur:
+            cur.execute(query)
+            results = cur.fetchall()
+        return set(x[0] for x in results)
+
 
     def make_movie_mapping(self):
+        """ Creates mapping e.g.
+            e.g. {movie_id: [feature1:1, feature2:0, ...]}
+
+        """
         mapping = defaultdict(list)
         seen_movies = set(self.seen_movies)
         features = set()
@@ -104,11 +134,18 @@ class MovieReviews(object):
     def create_predict_svm(self):
         svm = []
         for movie in self.movie_mapping:
+            # if movie is in box_office
+            # if movie in self.box_office:
             features = ' '.join(self.movie_mapping[movie])
             svm.append("0 {} # {}".format(features, movie))
         return StringIO.StringIO("\n".join(svm))
 
     def critic_rating_mapping(self):
+        """ Creates mapping of critics and their movie ratings
+            e.g. {critic_id1: {movie_id1: rating1, movie_id2: rating2}}
+        
+        """
+
         ratings = {}
 
         for review in self.reviews:

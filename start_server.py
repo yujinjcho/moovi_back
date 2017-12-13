@@ -25,7 +25,13 @@ timer = Timer()
 
 @app.route('/api/recommendations', methods=['post'])
 def queue_job():
-    data = request.get_json()
+    print request.data
+    print request.headers
+    print request.json
+    print request.is_json
+    
+    data = request.get_json(force=True)
+    print data
     result = q.enqueue(get_recommendations, data, timer)
     return json.dumps({'job_id': result.id})
 
