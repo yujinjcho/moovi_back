@@ -110,8 +110,6 @@ class MovieReviews(object):
     def create_predict_svm(self):
         svm = []
         for movie in self.movie_mapping:
-            # if movie is in box_office
-            # if movie in self.box_office:
             features = ' '.join(self.movie_mapping[movie])
             svm.append("0 {} # {}".format(features, movie))
         return StringIO.StringIO("\n".join(svm))

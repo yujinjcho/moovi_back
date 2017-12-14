@@ -58,14 +58,6 @@ class MovieRecommender(object):
         return set(x[0] for x in results)
 
     def box_office_recommendations(self):
-
-        # print("movies and scores")
-        # print([(
-        #     self.movie_mapping[movie], scores) 
-        #     for movie, scores in self.predictions.items()
-        #     if movie in self.box_office
-        # ])
-
         predict_like = [
             (movie,scores) for movie, scores in self.predictions.items() 
             if scores[1] > scores[0] and movie not in self.seen_movies
@@ -100,7 +92,6 @@ class MovieRecommender(object):
             self.movie_mapping[predict_sorted[i][0]]
             for i in range(n)
         ]
-
 
     def rating_for_movie(self, movie):
         if movie in self.predictions:
