@@ -9,7 +9,6 @@ class MovieReviews(object):
         self.reviews = self.load_reviews()
         self.liked_movies = self.load_movies('1', target_user)
         self.disliked_movies = self.load_movies('-1', target_user)
-        self.box_office = self.load_box_office()
 
         self.seen_movies = self.liked_movies + self.disliked_movies
         self.critics = list(set([review['critic'] for review in self.reviews]))
@@ -67,29 +66,6 @@ class MovieReviews(object):
         conn.close()
         return [result[0] for result in results]
 
-    def load_box_office(self):
-        conn = psycopg2.connect(
-            dbname=os.environ['DBNAME'],
-            user=os.environ['PGUSER'],
-            password=os.environ['PGPASSWORD'],
-            port=os.environ['PGPORT'],
-            host=os.environ['PGHOST']
-        )
-
-        query = """SELECT UNNEST(movies)
-                   FROM (
-                     SELECT *
-                     FROM box_office
-                     ORDER BY 
-                        date_created DESC
-                     LIMIT 1
-                   ) i
-        """
-       
-        with conn.cursor() as cur:
-            cur.execute(query)
-            results = cur.fetchall()
-        return set(x[0] for x in results)
 
 
     def make_movie_mapping(self):
