@@ -64,10 +64,15 @@ class MovieRecommender(object):
             if movie in self.box_office
         ]
         predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)
+
         return [
-            self.movie_mapping[movie[0]]
+            (self.movie_mapping[movie[0]], movie[1][0])
             for movie in predict_sorted
         ]
+        # return [
+        #     self.movie_mapping[movie[0]]
+        #     for movie in predict_sorted
+        # ]
 
 
     def top_n(self, n):
