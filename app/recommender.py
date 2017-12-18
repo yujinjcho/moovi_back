@@ -66,7 +66,7 @@ class MovieRecommender(object):
         predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)
 
         return [
-            (self.movie_mapping[movie[0]], movie[1][0])
+            (self.movie_mapping[movie[0]], movie[1][1])
             for movie in predict_sorted
         ]
         # return [
