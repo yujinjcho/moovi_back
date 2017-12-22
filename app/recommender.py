@@ -60,7 +60,7 @@ class MovieRecommender(object):
     def box_office_recommendations(self):
         predict_like = [
             (movie,scores) for movie, scores in self.predictions.items() 
-            if scores[1] > scores[0] and movie not in self.seen_movies
+            if scores[1] > scores[0] 
             if movie in self.box_office
         ]
         predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)
