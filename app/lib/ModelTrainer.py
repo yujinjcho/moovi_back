@@ -16,7 +16,7 @@ class ModelTrainer(object):
 
     def train_and_predict(self, X_predict):
         print "Tuning with all inputs"
-        clf = GridSearchCV(LogisticRegression(), self.parameters, n_jobs=-1, error_score=0) 
+        clf = GridSearchCV(LogisticRegression(random_state=1), self.parameters, n_jobs=-1, error_score=0) 
         clf.fit(self.X, self.Y) 
         self.timer.interval("Finished tuning with all inputs")
         self.predictions = clf.predict_proba(X_predict)
