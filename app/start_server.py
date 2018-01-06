@@ -23,9 +23,13 @@ q = Queue(connection=conn)
 
 timer = Timer()
 
+@app.route('/api/test')
+def test_api():
+    return "works"
+
 @app.route('/api/recommendations', methods=['post'])
 def queue_job():
-    data = request.get_json()
+    data = request.get_json(force=True)
     result = q.enqueue(get_recommendations, data, timer)
     return json.dumps({'job_id': result.id})
 

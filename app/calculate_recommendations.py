@@ -37,7 +37,7 @@ def _calculate_recommendations(user):
     model_trainer = ModelTrainer(X, Y, movies, Timer())
     model_trainer.train_and_predict(X_predict)
     recommender = MovieRecommender(movie_reviews, model_trainer)
-    return recommender.top_n(50)
+    return recommender.box_office_recommendations()
 
 
 def _write_to_db(ratings, user, db):
@@ -63,8 +63,3 @@ def _get_rated_movies(user, db):
         cur.execute(query, (user,))
         results = cur.fetchall()
         return set([x[0] for x in results])
-
-
-
-
-

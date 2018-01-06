@@ -9,6 +9,7 @@ class MovieReviews(object):
         self.reviews = self.load_reviews()
         self.liked_movies = self.load_movies('1', target_user)
         self.disliked_movies = self.load_movies('-1', target_user)
+
         self.seen_movies = self.liked_movies + self.disliked_movies
         self.critics = list(set([review['critic'] for review in self.reviews]))
         self.critic_ratings = self.critic_rating_mapping()
@@ -66,7 +67,12 @@ class MovieReviews(object):
         return [result[0] for result in results]
 
 
+
     def make_movie_mapping(self):
+        """ Creates mapping e.g.
+            e.g. {movie_id: [feature1:1, feature2:0, ...]}
+
+        """
         mapping = defaultdict(list)
         seen_movies = set(self.seen_movies)
         features = set()
@@ -109,6 +115,11 @@ class MovieReviews(object):
         return StringIO.StringIO("\n".join(svm))
 
     def critic_rating_mapping(self):
+        """ Creates mapping of critics and their movie ratings
+            e.g. {critic_id1: {movie_id1: rating1, movie_id2: rating2}}
+        
+        """
+
         ratings = {}
 
         for review in self.reviews:
