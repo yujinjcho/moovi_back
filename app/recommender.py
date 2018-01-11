@@ -10,7 +10,8 @@ class MovieRecommender(object):
         self.disliked_movies = movie_reviews.disliked_movies
         self.seen_movies = set(self.liked_movies + self.disliked_movies)
         self.movie_mapping = self.load_mapping()
-        self.box_office = self.load_box_office()
+        # self.box_office = self.load_box_office()
+        self.target_movies = self.load_target_movies()
     
     def load_predictions(self, model_trainer):
         return dict(
@@ -33,7 +34,32 @@ class MovieRecommender(object):
         conn.close()
         return dict(results)
 
-    def load_box_office(self):
+#     def load_box_office(self):
+#         conn = psycopg2.connect(
+#             dbname=os.environ['DBNAME'],
+#             user=os.environ['PGUSER'],
+#             password=os.environ['PGPASSWORD'],
+#             port=os.environ['PGPORT'],
+#             host=os.environ['PGHOST']
+#         )
+# 
+#         query = """SELECT UNNEST(movies)
+#                    FROM (
+#                      SELECT *
+#                      FROM box_office
+#                      ORDER BY 
+#                         date_created DESC
+#                      LIMIT 1
+#                    ) i
+#         """
+#        
+#         with conn.cursor() as cur:
+#             cur.execute(query)
+#             results = cur.fetchall()
+#         return set(x[0] for x in results)
+
+
+    def load_target_movies(self):
         conn = psycopg2.connect(
             dbname=os.environ['DBNAME'],
             user=os.environ['PGUSER'],
@@ -42,14 +68,11 @@ class MovieRecommender(object):
             host=os.environ['PGHOST']
         )
 
-        query = """SELECT UNNEST(movies)
-                   FROM (
-                     SELECT *
-                     FROM box_office
-                     ORDER BY 
-                        date_created DESC
-                     LIMIT 1
-                   ) i
+        query = """
+        
+            SELECT rotten_id
+            FROM streaming_movies;
+        
         """
        
         with conn.cursor() as cur:
@@ -57,22 +80,30 @@ class MovieRecommender(object):
             results = cur.fetchall()
         return set(x[0] for x in results)
 
-    def box_office_recommendations(self):
+    # def box_office_recommendations(self):
+    #     predict_like = [
+    #         (movie,scores) for movie, scores in self.predictions.items() 
+    #         # if scores[1] > scores[0] 
+    #         if movie in self.box_office
+    #     ]
+    #     predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)[:50]
+
+    #     return [
+    #         (self.movie_mapping[movie[0]], movie[1][1])
+    #         for movie in predict_sorted
+    #     ]
+
+    def target_recommendations(self):
         predict_like = [
             (movie,scores) for movie, scores in self.predictions.items() 
-            if scores[1] > scores[0] 
-            if movie in self.box_office
+            if movie in self.target_movies
         ]
-        predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)
+        predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)[:200]
 
         return [
             (self.movie_mapping[movie[0]], movie[1][1])
             for movie in predict_sorted
         ]
-        # return [
-        #     self.movie_mapping[movie[0]]
-        #     for movie in predict_sorted
-        # ]
 
 
     def top_n(self, n):
