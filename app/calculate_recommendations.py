@@ -28,19 +28,15 @@ def get_recommendations(data, timer):
 
 
 def _calculate_recommendations(user):
-    print("load movie reviews")
     movie_reviews = MovieReviews(user)
 
     X, Y = load_svmlight_file(movie_reviews.training_svm)
     movies = movie_reviews.all_movies
     X_predict, _ = load_svmlight_file(movie_reviews.predict_svm)
 
-    print("init ModelTrainer")
     model_trainer = ModelTrainer(X, Y, movies, Timer())
     model_trainer.train_and_predict(X_predict)
     recommender = MovieRecommender(movie_reviews, model_trainer)
-    # return recommender.box_office_recommendations()
-    print("return target recommendations")
     return recommender.target_recommendations()
 
 

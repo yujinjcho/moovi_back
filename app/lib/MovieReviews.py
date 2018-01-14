@@ -24,7 +24,6 @@ class MovieReviews(object):
 
 
     def load_reviews(self):
-
         conn = psycopg2.connect(
            dbname=os.environ['DBNAME'],
            user=os.environ['PGUSER'],
