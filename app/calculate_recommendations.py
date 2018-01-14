@@ -37,7 +37,7 @@ def _calculate_recommendations(user):
     model_trainer = ModelTrainer(X, Y, movies, Timer())
     model_trainer.train_and_predict(X_predict)
     recommender = MovieRecommender(movie_reviews, model_trainer)
-    return recommender.box_office_recommendations()
+    return recommender.target_recommendations()
 
 
 def _write_to_db(ratings, user, db):

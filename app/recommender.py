@@ -1,5 +1,6 @@
 import os
 import json
+from collections import defaultdict
 from optparse import OptionParser
 import psycopg2
 
@@ -10,7 +11,8 @@ class MovieRecommender(object):
         self.disliked_movies = movie_reviews.disliked_movies
         self.seen_movies = set(self.liked_movies + self.disliked_movies)
         self.movie_mapping = self.load_mapping()
-        self.box_office = self.load_box_office()
+        self.target_movies = self.load_target_movies()
+	self.recommendation_limit = 50
     
     def load_predictions(self, model_trainer):
         return dict(
@@ -33,15 +35,7 @@ class MovieRecommender(object):
         conn.close()
         return dict(results)
 
-    def load_box_office(self):
-        conn = psycopg2.connect(
-            dbname=os.environ['DBNAME'],
-            user=os.environ['PGUSER'],
-            password=os.environ['PGPASSWORD'],
-            port=os.environ['PGPORT'],
-            host=os.environ['PGHOST']
-        )
-
+    def load_box_office(self, cur):
         query = """SELECT UNNEST(movies)
                    FROM (
                      SELECT *
@@ -52,58 +46,52 @@ class MovieRecommender(object):
                    ) i
         """
        
+        cur.execute(query)
+        results = cur.fetchall()
+        return set(x[0] for x in results)
+
+
+    def load_target_movies(self):
+        conn = psycopg2.connect(
+            dbname=os.environ['DBNAME'],
+            user=os.environ['PGUSER'],
+            password=os.environ['PGPASSWORD'],
+            port=os.environ['PGPORT'],
+            host=os.environ['PGHOST']
+        )
+
+        query = """
+        
+            SELECT streamer, rotten_id
+            FROM streaming_movies
+        
+        """
+       
         with conn.cursor() as cur:
             cur.execute(query)
             results = cur.fetchall()
-        return set(x[0] for x in results)
+	    box_office = self.load_box_office(cur)
+	
+	movies_by_provider = defaultdict(set)
+	for x in results:
+	    movies_by_provider[x[0]].add(x[1])
+	
+	movies_by_provider['box_office'] = box_office 
+	return movies_by_provider
 
-    def box_office_recommendations(self):
-        predict_like = [
-            (movie,scores) for movie, scores in self.predictions.items() 
-            if scores[1] > scores[0] 
-            if movie in self.box_office
-        ]
+	
+    def target_recommendations(self):
+
+        predict_like = [(movie,scores) for movie, scores in self.predictions.items()]
         predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)
 
-        return [
-            (self.movie_mapping[movie[0]], movie[1][1])
-            for movie in predict_sorted
-        ]
-        # return [
-        #     self.movie_mapping[movie[0]]
-        #     for movie in predict_sorted
-        # ]
+	recommendations = defaultdict(list)
+	for movie_prediction in predict_sorted:
+	    movie_id = movie_prediction[0]
+	    score = movie_prediction[1][1]
 
-
-    def top_n(self, n):
-        predict_like = [
-            (movie,scores) for movie, scores in self.predictions.items() 
-            if scores[1] > scores[0] and movie not in self.seen_movies
-        ]
-        predict_sorted = sorted(predict_like, key=lambda x: x[1][1], reverse=True)
-        return self.recommendations(predict_sorted, n)
-
-    def bottom_n(self, n):
-        predict_dislike = [
-            (movie,scores) for movie, scores in self.predictions.items() 
-            if scores[0] > scores[1] and movie not in self.seen_movies
-        ]
-        predict_sorted = sorted(predict_dislike, key=lambda x: x[1][0], reverse=True)
-        return self.recommendations(predict_sorted, n)
-
-
-    def recommendations(self, predict_sorted, n):
-        return [
-            self.movie_mapping[predict_sorted[i][0]]
-            for i in range(n)
-        ]
-
-    def rating_for_movie(self, movie):
-        if movie in self.predictions:
-            scores = self.predictions[movie]
-            return {
-                'like': scores[1],
-                'dislike': scores[0]
-            }
-
-        return None
+	    for streamer, movies in self.target_movies.iteritems():
+		if len(recommendations[streamer]) < self.recommendation_limit and movie_id in movies:
+	            recommendations[streamer].append((self.movie_mapping[movie_id], score))
+	
+	return dict(recommendations)
