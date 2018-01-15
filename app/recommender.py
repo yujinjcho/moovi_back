@@ -5,8 +5,9 @@ from optparse import OptionParser
 import psycopg2
 
 class MovieRecommender(object):
-    def __init__(self, movie_reviews, model_trainer):
-        self.predictions = self.load_predictions(model_trainer)
+    # def __init__(self, movie_reviews, model_trainer):
+    def __init__(self, movies, predictions):
+        self.predictions = self.format_predictions(movies, predictions)
         # self.liked_movies = movie_reviews.liked_movies
         # self.disliked_movies = movie_reviews.disliked_movies
         # self.seen_movies = set(self.liked_movies + self.disliked_movies)
@@ -14,9 +15,14 @@ class MovieRecommender(object):
         self.target_movies = self.load_target_movies()
 	self.recommendation_limit = 50
     
-    def load_predictions(self, model_trainer):
+    # def load_predictions(self, model_trainer):
+    #     return dict(
+    #         zip(model_trainer.movies, model_trainer.predictions.tolist())
+    #     )
+
+    def format_predictions(self, movies, predictions):
         return dict(
-            zip(model_trainer.movies, model_trainer.predictions.tolist())
+            zip(movies, predictions.tolist())
         )
 
     def load_mapping(self):
@@ -28,7 +34,7 @@ class MovieRecommender(object):
             host=os.environ['PGHOST']
         )
         cur = conn.cursor()
-        query = "select rotten_id, title from movies"
+        query = "select movie_num, title from movies_test"
         cur.execute(query)
         results = cur.fetchall()
         cur.close()
@@ -36,14 +42,19 @@ class MovieRecommender(object):
         return dict(results)
 
     def load_box_office(self, cur):
-        query = """SELECT UNNEST(movies)
-                   FROM (
-                     SELECT *
-                     FROM box_office
-                     ORDER BY 
-                        date_created DESC
-                     LIMIT 1
-                   ) i
+        # query = """SELECT UNNEST(movies)
+        #            FROM (
+        #              SELECT *
+        #              FROM box_office
+        #              ORDER BY 
+        #                 date_created DESC
+        #              LIMIT 1
+        #            ) i
+        # """
+
+        query = """
+
+select movie_num from (select unnest(movies) as movie_id from (select * from box_office order by date_created desc limit 1) i) b, movies_test m where b.movie_id = m.rotten_id;
         """
        
         cur.execute(query)
@@ -62,8 +73,9 @@ class MovieRecommender(object):
 
         query = """
         
-            SELECT streamer, rotten_id
-            FROM streaming_movies
+            SELECT streamer, m.movie_num
+            FROM streaming_movies s, movies_test m
+            WHERE s.rotten_id = m.rotten_id
         
         """
        

@@ -26,18 +26,24 @@ def get_recommendations(data, timer):
     return json.dumps(recommendations)
 
 
-
 def _calculate_recommendations(user):
-    movie_reviews = MovieReviews(user)
-
-    X, Y = load_svmlight_file(movie_reviews.training_svm)
-    movies = movie_reviews.all_movies
-    X_predict, _ = load_svmlight_file(movie_reviews.predict_svm)
-
-    model_trainer = ModelTrainer(X, Y, movies, Timer())
-    model_trainer.train_and_predict(X_predict)
-    recommender = MovieRecommender(movie_reviews, model_trainer)
+    movie_helper = MovieReviews(user)
+    X, Y, X_predict, movies, predictions = movie_helper.test_svm_setup()
+    recommender = MovieRecommender(movies, predictions)
     return recommender.target_recommendations()
+
+
+# def _calculate_recommendations(user):
+#     movie_reviews = MovieReviews(user)
+# 
+#     X, Y = load_svmlight_file(movie_reviews.training_svm)
+#     movies = movie_reviews.all_movies
+#     X_predict, _ = load_svmlight_file(movie_reviews.predict_svm)
+# 
+#     model_trainer = ModelTrainer(X, Y, movies, Timer())
+#     model_trainer.train_and_predict(X_predict)
+#     recommender = MovieRecommender(movie_reviews, model_trainer)
+#     return recommender.target_recommendations()
 
 
 def _write_to_db(ratings, user, db):
@@ -58,7 +64,8 @@ def _write_to_db(ratings, user, db):
     db.commit()
 
 def _get_rated_movies(user, db):
-    query = "SELECT rotten_id from ratings WHERE user_id = %s"
+    # query = "SELECT rotten_id from ratings WHERE user_id = %s"
+    query = "SELECT rotten_id from ratings_test WHERE user_num = %s"
     with db.cursor() as cur:
         cur.execute(query, (user,))
         results = cur.fetchall()
