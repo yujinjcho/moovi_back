@@ -7,9 +7,9 @@ import psycopg2
 class MovieRecommender(object):
     def __init__(self, movie_reviews, model_trainer):
         self.predictions = self.load_predictions(model_trainer)
-        self.liked_movies = movie_reviews.liked_movies
-        self.disliked_movies = movie_reviews.disliked_movies
-        self.seen_movies = set(self.liked_movies + self.disliked_movies)
+        # self.liked_movies = movie_reviews.liked_movies
+        # self.disliked_movies = movie_reviews.disliked_movies
+        # self.seen_movies = set(self.liked_movies + self.disliked_movies)
         self.movie_mapping = self.load_mapping()
         self.target_movies = self.load_target_movies()
 	self.recommendation_limit = 50
