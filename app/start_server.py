@@ -54,17 +54,21 @@ def start(user_id):
     return _top_movies(user_id)
 
 
-@app.route('/api/refresh', methods=['post'])
-def refresh():
-    data = request.get_json()
+@app.route('/api/refresh', methods=['post'], defaults={'movie_counts_empty':False})
+@app.route('/api/refresh/<movie_counts_empty>', methods=['post'])
+def refresh(movie_counts_empty):
+    data = request.get_json(force=True)
     ratings = data['ratings']
     user = data['user_id']
     not_rated_movies = data['not_rated_movies']
     _write_to_db(ratings, user)
+    
+    if movie_counts_empty:
+        return _top_movies(user, not_rated_movies, refresh_N=50)
     return _top_movies(user, not_rated_movies)
 
 
-def _top_movies(user=None, not_rated_movies=[]):
+def _top_movies(user=None, not_rated_movies=[], refresh_N=None):
     db = get_db()
     if not user:
         query = """ SELECT m.title, m.rotten_id, m.image_url, count(r.rating_id)
@@ -90,7 +94,8 @@ def _top_movies(user=None, not_rated_movies=[]):
         with db.cursor() as cur:
             cur.execute(query, (user,))
             results = cur.fetchall()
-        N = 25
+
+        N = refresh_N or 25
 
     movies_to_exclude = set(not_rated_movies)
     top_movies_to_rate = []
