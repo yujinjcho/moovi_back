@@ -23,7 +23,7 @@ incremental==17.5.0
 ipaddress==1.0.18
 itsdangerous==0.24
 luigi==2.6.1
-lxml==3.8.0
+lxml==4.6.2
 numpy==1.13.0
 parsel==1.2.0
 psycopg2==2.7.1
