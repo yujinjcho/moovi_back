@@ -41,6 +41,6 @@ scipy==0.19.0
 service-identity==17.0.0
 six==1.10.0
 sklearn==0.0
-urllib3==1.21.1
+urllib3==1.26.5
 w3lib==1.18.0
 zope.interface==4.4.2
